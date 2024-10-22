@@ -5,6 +5,7 @@ import Layout from '../layouts/Layout.astro';
 <Layout title="No, Wildo!">
 	<main>
 		<img class="astro-image" src="/nw_mock_white.png" alt="No, Wildo!" />
+		<h1 class="text-gradient">No, Wildo!</span></h1>
 	</main>
 </Layout>
 
@@ -29,5 +30,21 @@ import Layout from '../layouts/Layout.astro';
             height: 50dvw;
         }
 
+	}
+
+	h1 {
+		font-size: 4rem;
+		font-weight: 700;
+		line-height: 1;
+		text-align: center;
+		margin-bottom: 1em;
+		color: white;
+	}
+	.text-gradient {
+		background-image: var(--accent-gradient);
+		-webkit-background-clip: text;
+		-webkit-text-fill-color: transparent;
+		background-size: 400%;
+		background-position: 0%;
 	}
 </style>
