@@ -1,50 +1,24 @@
 ---
+import TwitchEmbed from '../components/TwitchEmbed.jsx';
 import Layout from '../layouts/Layout.astro';
+const canal = "nowildo";
 ---
 
-<Layout title="No, Wildo!">
-	<main>
-		<img class="astro-image" src="/nw_mock_white.png" alt="No, Wildo!" />
-		<h1 class="text-gradient">No, Wildo!</h1>
-	</main>
+<Layout title="NoWildo">
+	<div class="hero-section">
+		<h1>Hola! Soy NoWildo</h1>
+		<p>Transmisión en vivo de juegos y más</p>
+	</div>
+	<div class="stream-container">
+		<TwitchEmbed client:load channel={canal} width="100%" height={480} />
+	</div>
 </Layout>
 
 <style>
-	main {
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		justify-content: center;
-		height: 100vh;
-		padding: 0 1rem;
-	}
-	.astro-image {
-		width: 60dvw;
-		height: 60dvw;
-
-		max-width: 400px;
-		max-height: 400px;
-
-		@media (min-width: 560px) {
-            width: 50dvw;
-            height: 50dvw;
-        }
-
-	}
-
-	h1 {
-		font-size: 4rem;
-		font-weight: 700;
-		line-height: 1;
-		text-align: center;
-		margin-bottom: 1em;
-		color: white;
-	}
-	.text-gradient {
-		background-image: var(--accent-gradient);
-		-webkit-background-clip: text;
-		-webkit-text-fill-color: transparent;
-		background-size: 400%;
-		background-position: 0%;
+	.stream-container {
+		padding: 16px;
+		max-width: 1200px; /* Opcional: para limitar el ancho máximo en pantallas grandes */
+		margin: 0 auto; /* Opcional: para centrar el contenedor */
+		border: 2px solid #49927e;
 	}
 </style>

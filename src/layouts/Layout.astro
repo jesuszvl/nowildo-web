@@ -4,48 +4,22 @@ interface Props {
 }
 
 const { title } = Astro.props;
+import Header from '../components/Header.astro';
+import '../styles/main.scss';
 ---
 
 <!doctype html>
 <html lang="es">
 	<head>
 		<meta charset="UTF-8" />
-		<meta name="description" content="No, Wildo! - Un proyecto creativo y divertido" />
+		<meta name="description" content="NoWildo" />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-		<meta name="author" content="No, Wildo!" />
+		<meta name="author" content="NoWildo" />
 		<link rel="icon" type="image/x-icon" href="/favicon.ico" />
 		<meta name="generator" content={Astro.generator} />
 		<title>{title}</title>
 	</head>
-	<body>
+		<Header title={title} />
 		<slot />
 	</body>
-</html>
-<style is:global>
-	:root {
-		--accent: 105, 105, 105; /* Dim Gray */
-        --accent-light: 169, 169, 169; /* Dark Gray */
-        --accent-dark: 47, 79, 79; /* Dark Slate Gray */
-		--accent-gradient: linear-gradient(
-			45deg,
-			rgb(var(--accent)),
-			rgb(var(--accent-light)) 30%,
-			gray 60%
-		);
-	}
-	html {
-		font-family: system-ui, sans-serif;
-		background: #13151a;
-	}
-	code {
-		font-family:
-			Menlo,
-			Monaco,
-			Lucida Console,
-			Liberation Mono,
-			DejaVu Sans Mono,
-			Bitstream Vera Sans Mono,
-			Courier New,
-			monospace;
-	}
 </style>

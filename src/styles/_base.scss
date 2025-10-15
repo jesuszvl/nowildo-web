@@ -1,0 +1,26 @@
+/* Base/global styles */
+html {
+  font-family: system-ui, sans-serif;
+  background: black;
+}
+
+code {
+  font-family:
+    Menlo, Monaco, "Lucida Console", "Liberation Mono", "DejaVu Sans Mono",
+    "Bitstream Vera Sans Mono", "Courier New", monospace;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  color: white;
+  background: black;
+  line-height: 1.6;
+}
+
+/* sensible box-sizing reset for predictable layouts */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
