@@ -7,3 +7,53 @@
 .logo {
   height: 62px;
 }
+
+/* Animations */
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* Twitch Embed Styles */
+.twitch-embed-container {
+  width: 100% !important;
+  max-width: 100% !important;
+  height: 100% !important;
+  min-height: 100% !important;
+  position: relative !important;
+  
+  iframe {
+    width: 100% !important;
+    max-width: 100% !important;
+    height: 100% !important;
+    min-height: 100% !important;
+    display: block !important;
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+  }
+}
+
+/* Asegurar que cualquier div con id twitch-embed-* también tome el 100% */
+[id^="twitch-embed-"] {
+  width: 100% !important;
+  max-width: 100% !important;
+  height: 100% !important;
+  min-height: 100% !important;
+  position: relative !important;
+  
+  iframe {
+    width: 100% !important;
+    max-width: 100% !important;
+    height: 100% !important;
+    min-height: 100% !important;
+    display: block !important;
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+  }
+}
