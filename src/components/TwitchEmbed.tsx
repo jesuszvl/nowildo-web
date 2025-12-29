@@ -1,11 +1,44 @@
 import { useEffect, useRef, useState } from "preact/hooks";
 
-export default function TwitchEmbed({ channel, width = "100%", height = 480 }) {
-  const ref = useRef(null);
-  const containerRef = useRef(null);
+interface TwitchEmbedProps {
+  channel: string;
+  width?: string | number;
+  height?: string | number;
+}
+
+interface TwitchWindow extends Window {
+  Twitch?: {
+    Embed: {
+      new (id: string, options: TwitchEmbedOptions): TwitchEmbedInstance;
+      VIDEO_READY: string;
+      ERROR: string;
+    };
+  };
+}
+
+interface TwitchEmbedOptions {
+  width: string | number;
+  height: string | number;
+  channel: string;
+  parent: string[];
+  autoplay?: boolean;
+}
+
+interface TwitchEmbedInstance {
+  addEventListener: (event: string, callback: () => void) => void;
+}
+
+export default function TwitchEmbed({
+  channel,
+  width = "100%",
+  height = 480,
+}: TwitchEmbedProps) {
+  const ref = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState<string | null>(null);
   const [isVisible, setIsVisible] = useState(false);
+  const loadingTimeoutRef = useRef<number | null>(null);
 
   useEffect(() => {
     // Lazy loading: solo cargar cuando el componente es visible
@@ -34,16 +67,17 @@ export default function TwitchEmbed({ channel, width = "100%", height = 480 }) {
   useEffect(() => {
     if (!isVisible || !ref.current) return;
 
-    let embedInstance = null;
-    let scriptElement = null;
+    let embedInstance: TwitchEmbedInstance | null = null;
+    let scriptElement: HTMLScriptElement | null = null;
 
     // Función para crear el embed
     function createEmbed() {
       if (!ref.current) return;
 
       const parent = window.location.hostname;
+      const twitchWindow = window as TwitchWindow;
 
-      if (!window.Twitch || !window.Twitch.Embed) {
+      if (!twitchWindow.Twitch || !twitchWindow.Twitch.Embed) {
         console.warn("Twitch embed script not loaded yet");
         setError("El script de Twitch no se ha cargado correctamente");
         setLoading(false);
@@ -57,9 +91,9 @@ export default function TwitchEmbed({ channel, width = "100%", height = 480 }) {
             ? height
             : typeof height === "string" && height.includes("%")
               ? "100%"
-              : parseInt(height) || "100%";
+              : parseInt(String(height)) || "100%";
 
-        embedInstance = new window.Twitch.Embed(ref.current.id, {
+        embedInstance = new twitchWindow.Twitch.Embed(ref.current.id, {
           width: "100%",
           height: embedHeight,
           channel,
@@ -90,7 +124,7 @@ export default function TwitchEmbed({ channel, width = "100%", height = 480 }) {
         };
 
         // Escuchar eventos del embed
-        embedInstance.addEventListener(window.Twitch.Embed.VIDEO_READY, () => {
+        embedInstance.addEventListener(twitchWindow.Twitch.Embed.VIDEO_READY, () => {
           setLoading(false);
           setError(null);
           // Aplicar estilos al iframe cuando esté listo
@@ -98,21 +132,34 @@ export default function TwitchEmbed({ channel, width = "100%", height = 480 }) {
           // También aplicar después de un pequeño delay por si acaso
           setTimeout(applyIframeStyles, 100);
           setTimeout(applyIframeStyles, 500);
+          
+          // Limpiar timeout de seguridad
+          if (loadingTimeoutRef.current) {
+            clearTimeout(loadingTimeoutRef.current);
+            loadingTimeoutRef.current = null;
+          }
         });
 
         // Aplicar estilos inmediatamente después de crear el embed
         setTimeout(applyIframeStyles, 50);
 
-        embedInstance.addEventListener(window.Twitch.Embed.ERROR, (error) => {
-          console.error("TwitchEmbed: embed error", error);
+        embedInstance.addEventListener(twitchWindow.Twitch.Embed.ERROR, () => {
+          console.error("TwitchEmbed: embed error");
           setError("Error al cargar el stream de Twitch");
           setLoading(false);
+          
+          // Limpiar timeout de seguridad
+          if (loadingTimeoutRef.current) {
+            clearTimeout(loadingTimeoutRef.current);
+            loadingTimeoutRef.current = null;
+          }
         });
 
         // Timeout de seguridad
-        setTimeout(() => {
+        loadingTimeoutRef.current = window.setTimeout(() => {
           if (loading) {
             setLoading(false);
+            loadingTimeoutRef.current = null;
           }
         }, 10000);
       } catch (err) {
@@ -123,7 +170,8 @@ export default function TwitchEmbed({ channel, width = "100%", height = 480 }) {
     }
 
     // Cargar el script de Twitch si no está disponible
-    if (!window.Twitch) {
+    const twitchWindow = window as TwitchWindow;
+    if (!twitchWindow.Twitch) {
       scriptElement = document.createElement("script");
       scriptElement.src = "https://player.twitch.tv/js/embed/v1.js";
       scriptElement.async = true;
@@ -144,6 +192,10 @@ export default function TwitchEmbed({ channel, width = "100%", height = 480 }) {
 
     // Cleanup
     return () => {
+      if (loadingTimeoutRef.current) {
+        clearTimeout(loadingTimeoutRef.current);
+        loadingTimeoutRef.current = null;
+      }
       if (scriptElement && scriptElement.parentNode) {
         scriptElement.parentNode.removeChild(scriptElement);
       }
@@ -154,46 +206,31 @@ export default function TwitchEmbed({ channel, width = "100%", height = 480 }) {
     };
   }, [channel, width, height, isVisible, loading]);
 
+  const getHeightStyle = () => {
+    return typeof height === "number" ? `${height}px` : "100%";
+  };
+
   return (
     <div
       ref={containerRef}
+      className="twitch-embed-wrapper"
       style={{
-        width: "100%",
-        maxWidth: "100%",
-        position: "relative",
-        height: typeof height === "number" ? `${height}px` : "100%",
-        minHeight: typeof height === "number" ? `${height}px` : "100%",
+        height: getHeightStyle(),
+        minHeight: getHeightStyle(),
       }}
     >
       {loading && (
         <div
+          className="twitch-embed-loading"
           style={{
-            position: "absolute",
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            backgroundColor: "#18181b",
-            color: "#efeff1",
-            zIndex: 10,
-            minHeight: typeof height === "number" ? `${height}px` : height,
+            minHeight: getHeightStyle(),
           }}
+          role="status"
+          aria-live="polite"
+          aria-label="Cargando stream de Twitch"
         >
-          <div style={{ textAlign: "center" }}>
-            <div
-              style={{
-                width: "40px",
-                height: "40px",
-                border: "4px solid #9147ff",
-                borderTop: "4px solid transparent",
-                borderRadius: "50%",
-                animation: "spin 1s linear infinite",
-                margin: "0 auto 16px",
-              }}
-            />
+          <div className="twitch-embed-loading-content">
+            <div className="twitch-embed-spinner" aria-hidden="true" />
             <p>Cargando stream...</p>
           </div>
         </div>
@@ -201,33 +238,20 @@ export default function TwitchEmbed({ channel, width = "100%", height = 480 }) {
 
       {error && (
         <div
+          className="twitch-embed-error"
           style={{
-            position: "absolute",
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            backgroundColor: "#18181b",
-            color: "#efeff1",
-            zIndex: 10,
-            minHeight: typeof height === "number" ? `${height}px` : height,
-            padding: "20px",
-            textAlign: "center",
+            minHeight: getHeightStyle(),
           }}
+          role="alert"
+          aria-live="assertive"
         >
-          <div>
-            <p style={{ marginBottom: "12px", fontSize: "18px" }}>⚠️ {error}</p>
+          <div className="twitch-embed-error-content">
+            <p className="twitch-embed-error-message">⚠️ {error}</p>
             <a
               href={`https://www.twitch.tv/${channel}`}
               target="_blank"
               rel="noopener noreferrer"
-              style={{
-                color: "#9147ff",
-                textDecoration: "underline",
-              }}
+              className="twitch-embed-error-link"
             >
               Ver en Twitch
             </a>
@@ -240,14 +264,12 @@ export default function TwitchEmbed({ channel, width = "100%", height = 480 }) {
         ref={ref}
         className="twitch-embed-container"
         style={{
-          width: "100%",
-          maxWidth: "100%",
           height: "100%",
-          minHeight: typeof height === "number" ? `${height}px` : "100%",
+          minHeight: getHeightStyle(),
           display: error ? "none" : "block",
-          position: "relative",
         }}
       />
     </div>
   );
 }
+

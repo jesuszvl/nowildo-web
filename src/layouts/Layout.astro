@@ -1,4 +1,8 @@
 ---
+import Header from '../components/Header.astro';
+import '../styles/main.scss';
+import { SITE_NAME, SITE_DESCRIPTION } from '../config/constants';
+
 interface Props {
 	title: string;
 	description?: string;
@@ -6,13 +10,11 @@ interface Props {
 
 const { 
 	title,
-	description = "Transmisión en vivo de juegos y más con NoWildo"
+	description = SITE_DESCRIPTION
 } = Astro.props;
-import Header from '../components/Header.astro';
-import '../styles/main.scss';
 
 const siteUrl = Astro.site?.href || 'https://nowildo.com';
-const fullTitle = `${title} | NoWildo`;
+const fullTitle = `${title} | ${SITE_NAME}`;
 ---
 
 <!doctype html>
@@ -26,7 +28,7 @@ const fullTitle = `${title} | NoWildo`;
 		<title>{fullTitle}</title>
 		<meta name="title" content={fullTitle} />
 		<meta name="description" content={description} />
-		<meta name="author" content="NoWildo" />
+		<meta name="author" content={SITE_NAME} />
 		<meta name="keywords" content="twitch, streaming, gaming, nowildo, live stream" />
 		
 		<!-- Open Graph / Facebook -->
@@ -35,7 +37,7 @@ const fullTitle = `${title} | NoWildo`;
 		<meta property="og:title" content={fullTitle} />
 		<meta property="og:description" content={description} />
 		<meta property="og:image" content={`${siteUrl}/logo.png`} />
-		<meta property="og:site_name" content="NoWildo" />
+		<meta property="og:site_name" content={SITE_NAME} />
 		
 		<!-- Twitter -->
 		<meta name="twitter:card" content="summary_large_image" />
